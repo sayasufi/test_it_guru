@@ -8,7 +8,28 @@ Currency Converter — это веб-приложение на основе Djan
 - Поддержка различных валют
 - Удобный интерфейс с темной темой
 - Поддержка поиска по валютам в выпадающем списке
+- Асинхронная обработка запросов с использованием AJAX для обновления результатов без перезагрузки страницы
 
+### Конвертация валют
+Для конвертации валют перейдите по адресу:
+
+```bash
+http://localhost:8000/converter/
+```
+На этой странице вы можете выбрать исходную и целевую валюты, ввести сумму и нажать "Конвертировать", чтобы получить результат.
+
+### API для конвертации валют
+Приложение также предоставляет API для конвертации валют. Пример запроса:
+
+```vbnet
+GET /api/rates/?from=USD&to=RUB&value=1
+```
+Ответ:
+```json
+{
+    "result": 62.16
+}
+```
 ## Требования
 
 - Python 3.11
@@ -35,17 +56,25 @@ source env/bin/activate  # для Windows используйте `env\Scripts\ac
 pip install -r requirements.txt
 ```
 
-### Шаг 4: Применение миграций
+### Шаг 4: Создание файла .env
+Создайте файл .env в корне проекта со следующим содержимым:
+```env
+DEBUG=1
+SECRET_KEY=your-secret-key
+DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
+```
+
+### Шаг 5: Применение миграций
 ```bash
 python manage.py migrate
 ```
 
-### Шаг 5: Создание суперпользователя
+### Шаг 6: Создание суперпользователя
 ```bash
 python manage.py createsuperuser
 ```
 
-### Шаг 6: Запуск сервера разработки
+### Шаг 7: Запуск сервера разработки
 ```bash
 python manage.py runserver
 ```
@@ -65,17 +94,40 @@ cd currency_converter
 DEBUG=1
 SECRET_KEY=your-secret-key
 DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
-DATABASE_URL=postgres://postgres:postgres@db:5432/currency_converter
 ```
 
-### Шаг 3: Сборка контейнеров
+### Шаг 3: Настройка docker-compose.yml
+```env
+    environment:
+      - USE_DOCKER=true
+      - DB_NAME=your_db_name
+      - DB_USER=your_db_user
+      - DB_PASSWORD=your_db_password
+      - DB_HOST=db
+      - DB_PORT=5432
+      
+    environment:
+      POSTGRES_DB: your_db_name
+      POSTGRES_USER: your_db_user
+      POSTGRES_PASSWORD: your_db_password
+      POSTGRES_HOST_AUTH_METHOD: trust
+```
+
+### Шаг 4: Сборка контейнеров
 ```bash
 docker-compose build
 ```
 
-### Шаг 4: Запуск контейнеров
+### Шаг 5: Запуск контейнеров
 ```bash
 docker-compose up
 ```
 
 Приложение будет доступно по адресу http://localhost:8000
+
+```bash
+docker-compose down
+docker rm -f $(docker ps -a -q)
+docker rmi -f $(docker images -q)
+docker volume rm $(docker volume ls -q)
+```
